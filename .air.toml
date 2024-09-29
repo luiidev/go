@@ -1,0 +1,14 @@
+# .air.toml
+root = "."
+tmp_dir = "tmp"
+
+[build]
+bin = "tmp/main"
+cmd = "go build -o tmp/main ./cmd/app"
+
+[watch]
+includes = ["**/*.go"]
+excludes = ["tmp/**"]
+
+[log]
+level = "info"
