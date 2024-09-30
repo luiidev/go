@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -13,8 +11,6 @@ import (
 	"github.com/luiidev/go/pkg/validation"
 	"gorm.io/gorm"
 )
-
-var jwtKey = []byte("my_secret_key")
 
 type Credentials struct {
 	Email    string `json:"email" validate:"required"`
@@ -77,40 +73,10 @@ func invalidCredentials(w http.ResponseWriter) {
 // Crear el token JWT
 func (c AuthController) createToken(userID uint) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id": userID,
-		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+		"id":  userID,
+		"exp": time.Now().Add(time.Duration(c.cfg.JWT.Expiration) * time.Minute).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(c.cfg.App.JwtSecret))
-}
-
-// Middleware para proteger rutas (verifica el JWT)
-func JWTAuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tokenStr := r.Header.Get("Authorization")
-		if tokenStr == "" {
-			http.Error(w, "Authorization header missing", http.StatusUnauthorized)
-			return
-		}
-
-		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method")
-			}
-			return jwtKey, nil
-		})
-
-		if err != nil || !token.Valid {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-
-// Ruta protegida
-func ProtectedRoute(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(map[string]string{"message": "You are authenticated"})
+	return token.SignedString([]byte(c.cfg.JWT.Secret))
 }

@@ -10,6 +10,7 @@ type (
 	// Config -.
 	Config struct {
 		App
+		JWT
 		HTTP
 		Log
 		DB
@@ -17,9 +18,13 @@ type (
 
 	// App -.
 	App struct {
-		Name      string `env-required:"true" env:"APP_NAME"`
-		Version   string `env-required:"true" env:"APP_VERSION"`
-		JwtSecret string `env-required:"true" env:"JWT_SECRET"`
+		Name    string `env-required:"true" env:"APP_NAME"`
+		Version string `env-required:"true" env:"APP_VERSION"`
+	}
+
+	JWT struct {
+		Secret     string `env-required:"true" env:"JWT_SECRET"`
+		Expiration int    `env-required:"true" env:"JWT_EXPIRATION"`
 	}
 
 	// HTTP -.
