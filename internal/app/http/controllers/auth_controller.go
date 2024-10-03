@@ -56,7 +56,7 @@ func (c AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Crear el token JWT
-	token, err := c.createToken(user.ID)
+	token, err := c.createToken(user)
 	if err != nil {
 		JsonResponse(w, Response{Message: "Error generating token"}, http.StatusInternalServerError)
 		return
@@ -71,9 +71,9 @@ func invalidCredentials(w http.ResponseWriter) {
 }
 
 // Crear el token JWT
-func (c AuthController) createToken(userID uint) (string, error) {
+func (c AuthController) createToken(user models.User) (string, error) {
 	claims := jwt.MapClaims{
-		"id":  userID,
+		"sub": user.ID,
 		"exp": time.Now().Add(time.Duration(c.cfg.JWT.Expiration) * time.Minute).Unix(),
 	}
 
