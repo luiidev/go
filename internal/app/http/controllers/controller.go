@@ -11,7 +11,7 @@ type Response struct {
 	Errors  interface{} `json:"errors,omitempty"`
 }
 
-func JsonResponse(w http.ResponseWriter, data Response, statusCode ...int) {
+func JsonResponse(w http.ResponseWriter, response Response, statusCode ...int) {
 	// Si no se proporciona `statusCode`, usar 200 como valor por defecto
 	status := http.StatusOK
 	if len(statusCode) > 0 {
@@ -23,5 +23,5 @@ func JsonResponse(w http.ResponseWriter, data Response, statusCode ...int) {
 	w.WriteHeader(status)
 
 	// Codificar la respuesta a JSON
-	json.NewEncoder(w).Encode(data)
+	json.NewEncoder(w).Encode(response)
 }
