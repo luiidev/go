@@ -50,7 +50,7 @@ func (c AuthController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.CheckPasswordHash(creds.Password) {
+	if !user.CheckPasswordHash(creds.Password) {
 		invalidCredentials(w)
 		return
 	}

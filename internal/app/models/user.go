@@ -31,8 +31,8 @@ func hashPassword(password string) (string, error) {
 }
 
 // Verificar si la contraseña ingresada coincide con el hash almacenado
-func (u *User) CheckPasswordHash(hashedPassword string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(u.Password))
+func (u *User) CheckPasswordHash(password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	return err == nil
 }
 
