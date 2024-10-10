@@ -2,14 +2,52 @@ package validation
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"reflect"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	res "github.com/luiidev/go/pkg/response"
 )
+
+type Errors map[string][]string
+
+type Validated struct {
+	message string
+	errors  Errors
+}
+
+func (v *Validated) Message() string {
+	return v.message
+}
+
+func (v *Validated) Errors() Errors {
+	return v.errors
+}
+
+func (v *Validated) Fails() bool {
+	return len(v.errors) > 0
+}
+
+func (v *Validated) Passes() bool {
+	return !v.Fails()
+}
+
+func (v *Validated) Error(field string) string {
+	if v.Fails() {
+		if errors, ok := v.errors[field]; ok {
+			return errors[0]
+		}
+	}
+
+	return ""
+}
+
+func (v *Validated) Response(w http.ResponseWriter) {
+	res.JSON(w, res.H{"message": v.message, "errors": v.errors}, http.StatusUnprocessableEntity)
+}
 
 var validate = validator.New()
 
@@ -45,18 +83,18 @@ func getJSONFieldName(entity interface{}, field string) string {
 }
 
 // Decodifica y valida el JSON
-func DecodeAndValidate[T any](body io.ReadCloser, model *T) (map[string][]string, error) {
+func Make[T any](body io.ReadCloser, model *T) Validated {
 	// Decodificar el JSON
 	err := json.NewDecoder(body).Decode(model)
 	if err != nil {
-		return nil, fmt.Errorf("invalid json: %v", err)
+		return Validated{message: "Invalid JSON", errors: Errors{"json": []string{"Invalid JSON"}}}
 	}
 
 	// Validar los campos
 	err = validate.Struct(model)
 	if err != nil {
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
-			errorsMap := make(map[string][]string)
+			errors := make(Errors)
 
 			// Recorrer los errores de validación y adaptarlos al formato de Laravel
 			for _, err := range validationErrors {
@@ -76,13 +114,13 @@ func DecodeAndValidate[T any](body io.ReadCloser, model *T) (map[string][]string
 				}
 
 				// Agregar el mensaje a la lista
-				errorsMap[field] = append(errorsMap[field], message)
+				errors[field] = append(errors[field], message)
 			}
 
-			// Retornar el formato de error compatible con Laravel
-			return errorsMap, errors.New("validation failed")
+			// Retornar el formato de error
+			return Validated{message: "Validation Failed", errors: errors}
 		}
 	}
 
-	return nil, nil
+	return Validated{}
 }

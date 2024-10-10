@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/luiidev/go/internal/app/models"
 	"github.com/luiidev/go/pkg/logger"
+	res "github.com/luiidev/go/pkg/response"
 	"github.com/luiidev/go/pkg/validation"
 	"gorm.io/gorm"
 )
@@ -22,7 +24,10 @@ func (c UserController) Index(w http.ResponseWriter, r *http.Request) {
 	users := []models.User{}
 	c.db.Limit(10).Find(&users)
 
-	JsonResponse(w, Response{Message: "Users", Data: users})
+	res.JSON(w, res.H{
+		"message": "Users",
+		"data":    users,
+	})
 }
 
 func (c UserController) Show(w http.ResponseWriter, r *http.Request) {
@@ -32,19 +37,19 @@ func (c UserController) Show(w http.ResponseWriter, r *http.Request) {
 
 	result := c.db.First(&user, userId)
 	if result.Error != nil {
-		JsonResponse(w, Response{Message: "Usuario no encontrado"}, http.StatusNotFound)
+		res.JSON(w, res.H{"message": "Usuario no encontrado"}, http.StatusNotFound)
 		return
 	}
 
-	JsonResponse(w, Response{Message: "User", Data: user})
+	res.JSON(w, res.H{"message": "User", "data": user})
 }
 
 func (c UserController) Store(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 
-	errors, err := validation.DecodeAndValidate(r.Body, &user)
-	if err != nil {
-		JsonResponse(w, Response{Message: err.Error(), Errors: errors}, http.StatusUnprocessableEntity)
+	validator := validation.Make(r.Body, &user)
+	if validator.Fails() {
+		validator.Response(w)
 		return
 	}
 
@@ -52,9 +57,18 @@ func (c UserController) Store(w http.ResponseWriter, r *http.Request) {
 
 	if result.Error != nil {
 		c.l.Error(result.Error)
-		JsonResponse(w, Response{Message: "Ocurrio un error"}, http.StatusInternalServerError)
+
+		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			res.JSON(w, res.H{"message": "El email ya esta en uso"}, http.StatusUnprocessableEntity)
+			return
+		}
+
+		res.JSON(w, res.H{"message": "Ocurrio un error"}, http.StatusInternalServerError)
 		return
 	}
 
-	JsonResponse(w, Response{Message: "User created", Data: user})
+	res.JSON(w, res.H{
+		"message": "User created",
+		"data":    user,
+	})
 }

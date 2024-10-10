@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/luiidev/go/pkg/logger"
+	res "github.com/luiidev/go/pkg/response"
 	"gorm.io/gorm"
 )
 
@@ -17,5 +18,5 @@ func NewExampleController(l logger.Logger, db gorm.DB) *ExampleController {
 }
 
 func (c ExampleController) Helloworld(w http.ResponseWriter, r *http.Request) {
-	JsonResponse(w, Response{Message: "Hello World!"})
+	res.JSON(w, res.H{"message": "Hello World!"})
 }

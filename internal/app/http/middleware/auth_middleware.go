@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/luiidev/go/config"
-	"github.com/luiidev/go/internal/app/http/controllers"
+	res "github.com/luiidev/go/pkg/response"
 	"gorm.io/gorm"
 )
 
@@ -23,14 +23,14 @@ func (m AuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 		// Obtener el valor del encabezado Authorization
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			controllers.JsonResponse(w, controllers.Response{Message: "Authorization header missing"}, http.StatusUnauthorized)
+			res.JSON(w, res.H{"message": "Authorization header missing"}, http.StatusUnauthorized)
 			return
 		}
 
 		// Verificar que el encabezado empiece con "Bearer "
 		const bearerPrefix = "Bearer "
 		if !strings.HasPrefix(authHeader, bearerPrefix) {
-			controllers.JsonResponse(w, controllers.Response{Message: "Invalid token prefix, expected 'Bearer'"}, http.StatusUnauthorized)
+			res.JSON(w, res.H{"message": "Invalid token prefix, expected 'Bearer'"}, http.StatusUnauthorized)
 			return
 		}
 
@@ -48,7 +48,7 @@ func (m AuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 
 		// Validar si hubo un error durante el parsing o el token es inválido
 		if err != nil || !token.Valid {
-			controllers.JsonResponse(w, controllers.Response{Message: "Invalid token"}, http.StatusUnauthorized)
+			res.JSON(w, res.H{"message": "Invalid token"}, http.StatusUnauthorized)
 			return
 		}
 
@@ -63,7 +63,7 @@ func (m AuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 			// Pasar la solicitud con el nuevo contexto al siguiente manejador
 			next.ServeHTTP(w, r.WithContext(ctx))
 		} else {
-			controllers.JsonResponse(w, controllers.Response{Message: "Invalid token claims"}, http.StatusUnauthorized)
+			res.JSON(w, res.H{"message": "Invalid token claims"}, http.StatusUnauthorized)
 		}
 	}
 }

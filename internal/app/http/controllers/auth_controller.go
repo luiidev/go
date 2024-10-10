@@ -8,6 +8,7 @@ import (
 	"github.com/luiidev/go/config"
 	"github.com/luiidev/go/internal/app/models"
 	"github.com/luiidev/go/pkg/logger"
+	res "github.com/luiidev/go/pkg/response"
 	"github.com/luiidev/go/pkg/validation"
 	"gorm.io/gorm"
 )
@@ -36,9 +37,9 @@ func NewAuthController(l logger.Logger, db gorm.DB, cfg config.Config) *AuthCont
 // Login: Validar las credenciales y generar el token JWT
 func (c AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	var creds Credentials
-	errors, err := validation.DecodeAndValidate(r.Body, &creds)
-	if err != nil {
-		JsonResponse(w, Response{Message: err.Error(), Errors: errors}, http.StatusUnprocessableEntity)
+	validator := validation.Make(r.Body, &creds)
+	if validator.Fails() {
+		validator.Response(w)
 		return
 	}
 
@@ -58,16 +59,22 @@ func (c AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	// Crear el token JWT
 	token, err := c.createToken(user)
 	if err != nil {
-		JsonResponse(w, Response{Message: "Error generating token"}, http.StatusInternalServerError)
+		res.JSON(w, res.H{"message": "Error generating token"}, http.StatusInternalServerError)
 		return
 	}
 
 	// Responder con el token
-	JsonResponse(w, Response{Message: "Login successful", Data: JWTResponse{Token: token, User: user}})
+	res.JSON(w, res.H{
+		"message": "Login successful",
+		"data": JWTResponse{
+			Token: token,
+			User: user,
+		},
+	})
 }
 
 func invalidCredentials(w http.ResponseWriter) {
-	JsonResponse(w, Response{Message: "Usuario y/o contraseña incorrecta"}, http.StatusUnauthorized)
+	res.JSON(w, res.H{"message": "Usuario y/o contraseña incorrecta"}, http.StatusUnauthorized)
 }
 
 // Crear el token JWT

@@ -14,10 +14,10 @@ type User struct {
 	ID        uint           `json:"id" gorm:"primary_key"`
 	FirstName string         `json:"first_name" validate:"required,max=50"`
 	LastName  string         `json:"last_name" validate:"required,max=50"`
-	Email     string         `json:"email" validate:"required,email"`
-	Password  string         `json:"-" validate:"required,min=8,max=24"`
-	CreatedAt time.Time      `json:"created_at,omitempty"`
-	UpdatedAt time.Time      `json:"updated_at,omitempty"`
+	Email     string         `json:"email" gorm:"unique" validate:"required,email"`
+	Password  string         `json:"-"`
+	CreatedAt time.Time      `json:"-"`
+	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
