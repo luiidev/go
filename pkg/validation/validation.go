@@ -87,7 +87,7 @@ func Make[T any](body io.ReadCloser, model *T) Validated {
 	// Decodificar el JSON
 	err := json.NewDecoder(body).Decode(model)
 	if err != nil {
-		return Validated{message: "Invalid JSON", errors: Errors{"json": []string{"Invalid JSON"}}}
+		return Validated{message: err.Error(), errors: Errors{"json": []string{"Invalid JSON"}}}
 	}
 
 	// Validar los campos

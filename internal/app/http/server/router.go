@@ -24,6 +24,9 @@ func Router(l *logger.Logger, db *gorm.DB, cfg *config.Config) *http.ServeMux {
 
 	authController := controllers.NewAuthController(*l, *db, *cfg)
 	router.HandleFunc("POST /login", authController.Login)
+	router.HandleFunc("POST /register", authController.Register)
+	router.HandleFunc("GET /me", authMiddleware.Handle(authController.Me))
+	router.HandleFunc("POST /me", authMiddleware.Handle(authController.MeUpdate))
 
 	return router
 }

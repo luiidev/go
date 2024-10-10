@@ -2,7 +2,6 @@ package models
 
 import (
 	"strings"
-	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/text/cases"
@@ -11,14 +10,11 @@ import (
 )
 
 type User struct {
-	ID        uint           `json:"id" gorm:"primary_key"`
-	FirstName string         `json:"first_name" validate:"required,max=50"`
-	LastName  string         `json:"last_name" validate:"required,max=50"`
-	Email     string         `json:"email" gorm:"unique" validate:"required,email"`
-	Password  string         `json:"-"`
-	CreatedAt time.Time      `json:"-"`
-	UpdatedAt time.Time      `json:"-"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
+	Model
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email" gorm:"unique"`
+	Password  string `json:"-"`
 }
 
 // Hashear la contraseña antes de almacenarla

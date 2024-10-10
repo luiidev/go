@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/luiidev/go/internal/app/http/requests"
 	"github.com/luiidev/go/internal/app/models"
 	"github.com/luiidev/go/pkg/logger"
 	res "github.com/luiidev/go/pkg/response"
@@ -45,12 +46,19 @@ func (c UserController) Show(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c UserController) Store(w http.ResponseWriter, r *http.Request) {
-	var user models.User
+	var userRequest requests.StoreUserRequest
 
-	validator := validation.Make(r.Body, &user)
+	validator := validation.Make(r.Body, &userRequest)
 	if validator.Fails() {
 		validator.Response(w)
 		return
+	}
+
+	user := models.User{
+		FirstName: userRequest.FirstName,
+		LastName:  userRequest.LastName,
+		Email:     userRequest.Email,
+		Password:  userRequest.Password,
 	}
 
 	result := c.db.Create(&user)
