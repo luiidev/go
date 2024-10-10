@@ -14,7 +14,9 @@ import (
 func Run(cfg *config.Config) {
 	l := logger.New(cfg.Log.Level)
 
-	db, err := gorm.Open(postgres.Open(cfg.DB.URL), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(cfg.DB.URL), &gorm.Config{
+		TranslateError: true,
+	})
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - postgres: %w", err))
 	}
