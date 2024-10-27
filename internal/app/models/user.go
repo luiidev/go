@@ -3,9 +3,8 @@ package models
 import (
 	"strings"
 
+	"github.com/luiidev/go/internal/utils"
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"gorm.io/gorm"
 )
 
@@ -33,8 +32,8 @@ func (u *User) CheckPasswordHash(password string) bool {
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	u.FirstName = cases.Title(language.Spanish).String(u.FirstName)
-	u.LastName = cases.Title(language.Spanish).String(u.LastName)
+	u.FirstName = utils.Title(u.FirstName)
+	u.LastName = utils.Title(u.LastName)
 	u.Email = strings.ToLower(u.Email)
 	passwordHashed, err := hashPassword(u.Password)
 	if err != nil {

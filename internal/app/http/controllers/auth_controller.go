@@ -9,6 +9,7 @@ import (
 	"github.com/luiidev/go/config"
 	"github.com/luiidev/go/internal/app/http/requests"
 	"github.com/luiidev/go/internal/app/models"
+	"github.com/luiidev/go/internal/utils"
 	"github.com/luiidev/go/pkg/logger"
 	res "github.com/luiidev/go/pkg/response"
 	"github.com/luiidev/go/pkg/validation"
@@ -147,11 +148,12 @@ func (c AuthController) MeUpdate(w http.ResponseWriter, r *http.Request) {
 	result := c.db.Model(models.User{}).
 		Where("id = ?", userId).
 		UpdateColumns(map[string]interface{}{
-			"first_name": userRequest.FirstName,
-			"last_name":  userRequest.LastName,
+			"first_name": utils.Title(userRequest.FirstName),
+			"last_name":  utils.Title(userRequest.LastName),
 		})
 
 	if result.Error != nil {
+		c.l.Error(result.Error)
 		res.JSON(w, res.H{"message": "Ocurrio un error"}, http.StatusInternalServerError)
 		return
 	}
