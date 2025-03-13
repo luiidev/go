@@ -56,7 +56,7 @@ func NewConfig() (*Config, error) {
 
 	err := cleanenv.ReadConfig("./.env", cfg)
 	if err != nil {
-		return nil, fmt.Errorf("config error: %w", err)
+		fmt.Println(".env not found")
 	}
 
 	err = cleanenv.ReadEnv(cfg)
